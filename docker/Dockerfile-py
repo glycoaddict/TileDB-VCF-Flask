@@ -52,6 +52,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # avoid --home to prevent issues with singularity
 RUN pip install --no-cache-dir cython pandas>=1.21.0 tiledb==0.11.3
 
+# install Flask
+RUN pip install --no-cache-dir Flask==2.2.2
+
 # Build arrow
 ENV ARROW_HOME=/usr/local
 
@@ -93,4 +96,11 @@ RUN python setup.py install
 RUN rm -r /tmp/TileDB-VCF
 
 WORKDIR /data
-ENTRYPOINT ["python3"]
+
+COPY flask-app flask-app
+
+WORKDIR /data/flask-app
+
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8081"]
+
+# ENTRYPOINT ["/bin/bash"]
