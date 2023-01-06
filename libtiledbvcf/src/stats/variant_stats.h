@@ -107,8 +107,7 @@ class VariantStats {
    * @param root_uri
    * @return std::string
    */
-  static std::string get_uri(
-      const std::string& root_uri, bool relative = false);
+  static std::string get_uri(std::string_view root_uri, bool relative = false);
 
   /**
    * @brief Consolidate commits
@@ -130,6 +129,30 @@ class VariantStats {
    * @param root_uri URI for the VCF dataset
    */
   static void consolidate_fragment_metadata(
+      std::shared_ptr<Context> ctx,
+      const std::vector<std::string>& tiledb_config,
+      const std::string& root_uri);
+
+  /**
+   * @brief Vacuum commits
+   *
+   * @param ctx TileDB context
+   * @param tiledb_config TileDB config
+   * @param root_uri URI for the VCF dataset
+   */
+  static void vacuum_commits(
+      std::shared_ptr<Context> ctx,
+      const std::vector<std::string>& tiledb_config,
+      const std::string& root_uri);
+
+  /**
+   * @brief Vacuum fragment metadata
+   *
+   * @param ctx TileDB context
+   * @param tiledb_config TileDB config
+   * @param root_uri URI for the VCF dataset
+   */
+  static void vacuum_fragment_metadata(
       std::shared_ptr<Context> ctx,
       const std::vector<std::string>& tiledb_config,
       const std::string& root_uri);

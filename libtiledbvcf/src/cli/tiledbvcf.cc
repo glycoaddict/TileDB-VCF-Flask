@@ -172,7 +172,7 @@ void do_utils_consolidate_commits(
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Consoldate commits.");
   dataset.consolidate_commits(args);
   LOG_TRACE("Finished utils consolidate commits command.");
 }
@@ -185,7 +185,7 @@ void do_utils_consolidate_fragments(
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Consoldate fragments.");
   dataset.consolidate_fragments(args);
   LOG_TRACE("Finished utils consolidate fragments command.");
 }
@@ -198,7 +198,7 @@ void do_utils_consolidate_fragment_metadata(
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Consoldate fragment metadata.");
   dataset.consolidate_fragment_metadata(args);
   LOG_TRACE("Finished utils consolidate fragment metadata command.");
 }
@@ -210,7 +210,7 @@ void do_utils_vacuum_commits(const UtilsParams& args, const CLI::App& cmd) {
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Vacuum commits.");
   dataset.vacuum_commits(args);
   LOG_TRACE("Finished utils vacuum commits command.");
 }
@@ -222,7 +222,7 @@ void do_utils_vacuum_fragments(const UtilsParams& args, const CLI::App& cmd) {
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Vacuum fragments.");
   dataset.vacuum_fragments(args);
   LOG_TRACE("Finished utils vacuum fragments command.");
 }
@@ -235,7 +235,7 @@ void do_utils_vacuum_fragment_metadata(
   tiledb::Config cfg;
   utils::set_tiledb_config(args.tiledb_config, &cfg);
   TileDBVCFDataset dataset(cfg);
-  dataset.open(args.uri, args.tiledb_config);
+  LOG_DEBUG("Vacuum fragment metadata.");
   dataset.vacuum_fragment_metadata(args);
   LOG_TRACE("Finished utils vacuum fragment metadata command.");
 }
@@ -420,6 +420,10 @@ void add_create(CLI::App& app) {
       [args](int count) { args->allow_duplicates = false; },
       "Allow records with duplicate start positions to be written to the "
       "array.");
+  cmd->add_flag(
+      "--compress-sample-dim",
+      args->compress_sample_dim,
+      "Add zstd compression to the sample dimension.");
 
   cmd->option_defaults()->group("Ingestion task options");
   cmd->add_flag(
@@ -698,6 +702,11 @@ void add_export(CLI::App& app) {
       args->cli_count_only,
       "Don't write output files, only print the count of the resulting "
       "number of intersecting records.");
+  cmd->add_option(
+         "--af-filter",
+         args->af_filter,
+         "If set, only export data that passes the AF filter.")
+      ->excludes("--count-only");
 
   cmd->option_defaults()->group("Region options");
   cmd->add_option(

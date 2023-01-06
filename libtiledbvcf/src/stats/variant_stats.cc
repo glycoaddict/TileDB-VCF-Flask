@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "dataset/variant_stats.h"
+#include "variant_stats.h"
 #include "utils/logger_public.h"
 #include "utils/utils.h"
 
@@ -193,9 +193,9 @@ void VariantStats::close() {
   enabled_ = false;
 }
 
-std::string VariantStats::get_uri(const std::string& root_uri, bool relative) {
+std::string VariantStats::get_uri(std::string_view root_uri, bool relative) {
   auto root = relative ? "" : root_uri;
-  return utils::uri_join(root, VARIANT_STATS_ARRAY);
+  return utils::uri_join(std::string(root), VARIANT_STATS_ARRAY);
 }
 
 void VariantStats::consolidate_commits(
@@ -206,16 +206,6 @@ void VariantStats::consolidate_commits(
   tiledb::VFS vfs(*ctx);
   if (!vfs.is_dir(get_uri(root_uri))) {
     return;
-  }
-
-  // Return if array is empty
-  // TODO: remove after https://github.com/TileDB-Inc/TileDB/pull/3389
-  {
-    FragmentInfo fragment_info(*ctx, get_uri(root_uri));
-    fragment_info.load();
-    if (fragment_info.fragment_num() == 0) {
-      return;
-    }
   }
 
   Config cfg;
@@ -238,6 +228,38 @@ void VariantStats::consolidate_fragment_metadata(
   utils::set_tiledb_config(tiledb_config, &cfg);
   cfg["sm.consolidation.mode"] = "fragment_meta";
   tiledb::Array::consolidate(*ctx, get_uri(root_uri), &cfg);
+}
+
+void VariantStats::vacuum_commits(
+    std::shared_ptr<Context> ctx,
+    const std::vector<std::string>& tiledb_config,
+    const std::string& root_uri) {
+  // Return if the array does not exist
+  tiledb::VFS vfs(*ctx);
+  if (!vfs.is_dir(get_uri(root_uri))) {
+    return;
+  }
+
+  Config cfg;
+  utils::set_tiledb_config(tiledb_config, &cfg);
+  cfg["sm.vacuum.mode"] = "commits";
+  tiledb::Array::vacuum(*ctx, get_uri(root_uri), &cfg);
+}
+
+void VariantStats::vacuum_fragment_metadata(
+    std::shared_ptr<Context> ctx,
+    const std::vector<std::string>& tiledb_config,
+    const std::string& root_uri) {
+  // Return if the array does not exist
+  tiledb::VFS vfs(*ctx);
+  if (!vfs.is_dir(get_uri(root_uri))) {
+    return;
+  }
+
+  Config cfg;
+  utils::set_tiledb_config(tiledb_config, &cfg);
+  cfg["sm.vacuum.mode"] = "fragment_meta";
+  tiledb::Array::vacuum(*ctx, get_uri(root_uri), &cfg);
 }
 
 //===================================================================
